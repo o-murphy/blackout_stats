@@ -50,7 +50,7 @@ class BlackoutState:
             with open('stats.csv', 'r', newline='') as csvfile:
                 reader = csv.reader(csvfile, delimiter=',')
                 data = [row for row in reader]
-                data = list[filter(lambda item, days: filter_days(item, days), data)]
+                data = list(filter(lambda item, days=days: filter_days(item, days), data))
                 return data
 
         except IOError as error:

@@ -89,7 +89,7 @@ def make_plot(data):
     plt.grid()
     # plt.show()
     buf = io.BytesIO()
-    plt.savefig(b, format='png')
+    plt.savefig(buf, format='png')
     return buf
 
 
