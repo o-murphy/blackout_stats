@@ -6,7 +6,8 @@ from .plot import make_plot
 
 
 class BotInstance:
-    def __init__(self, token: str, blackout: BlackoutState, target_chats: list[int] = None):
+    def __init__(self, token: str, blackout: BlackoutState,
+                 target_chats: list[int] = None):
         self.token = token
         self.blackout = blackout
         self.target_chats = target_chats
@@ -28,12 +29,12 @@ class BotInstance:
             await self.bot.session.close()
 
     async def send_stats(self, message: types.Message):
-        data = self.blackout.get_last_days(7)
-        buf = make_plot(data)
+        data = self.blackout.get_last_days(4)
+        buf = make_plot(data, self.blackout.schedule)
         legend = [
             "🟦 Електропостачання в нормі",
             "🟥 Електропостачання відсутнє",
-            # "🟧 Можливе відключення за графіком",
+            "🟧 Можливе відключення за графіком",
             "⬜ Немає даних",
         ]
         await message.answer_photo(buf.getvalue(), caption='\n'.join(legend))

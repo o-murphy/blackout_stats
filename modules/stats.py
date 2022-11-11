@@ -3,8 +3,9 @@ import csv
 
 
 class BlackoutState:
-    def __init__(self, host='None'):
+    def __init__(self, host='None', schedule: list = None):
         self.host = host
+        self.schedule = schedule
         self.previous = None
         self.last_time = datetime.now()
         self.load_state()
@@ -40,6 +41,12 @@ class BlackoutState:
     def get_last_days(self, days: int):
         def filter_days(item, days):
             self.host, date, start, end, state = item
+
+            start_time = datetime.strptime(start, "%H:%M:%S.%f")
+            end_time = datetime.strptime(end, "%H:%M:%S.%f")
+            if end_time < start_time:
+                return False
+
             date = datetime.strptime(f'{date}', "%Y-%m-%d")
             delta = date.date() - datetime.now().date()
             if delta.days < days:

@@ -14,19 +14,26 @@ TIMEOUT = 2
 TOKEN = ""
 CHAT_ID = 0
 
+GROUP = 1
+SCHEDULE = None
+
 try:
     with open('config.toml', 'rb') as fp:
         config = tomllib.load(fp)
-        HOST = config['main']['HOST']
-        TIMEOUT = config['main']['TIMEOUT']
-        TOKEN = config['main']['TOKEN']
-        CHAT_IDS = config['main']['CHAT_IDS']
+        main = config['main']
+        HOST = main['HOST']
+        TIMEOUT = main['TIMEOUT']
+        TOKEN = main['TOKEN']
+        CHAT_IDS = main['CHAT_IDS']
+
+        GROUP = main['GROUP']
+        SCHEDULE = config['schedules'][f'group{GROUP}']
 finally:
     pass
 
 
 async def main():
-    blackout = BlackoutState(HOST)
+    blackout = BlackoutState(HOST, SCHEDULE)
     bot = BotInstance(TOKEN, blackout, CHAT_IDS)
     await asyncio.gather(*[
         infinite_ping(HOST, TIMEOUT, callbacks=[
