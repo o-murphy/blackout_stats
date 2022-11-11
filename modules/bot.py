@@ -30,7 +30,13 @@ class BotInstance:
     async def send_stats(self, message: types.Message):
         data = self.blackout.get_last_days(7)
         buf = make_plot(data)
-        await message.answer_photo(buf.getvalue())
+        legend = [
+            "🟦 Електропостачання в нормі",
+            "🟥 Електропостачання відсутнє",
+            # "🟧 Можливе відключення за графіком",
+            "⬜ Немає даних",
+        ]
+        await message.answer_photo(buf.getvalue(), caption='\n'.join(legend))
 
     async def get_state(self, message: types.Message):
         await message.answer(f'{self.get_state_text()}\n<i>Останнє оновлення: {self.get_time_stamp()}</i>')
