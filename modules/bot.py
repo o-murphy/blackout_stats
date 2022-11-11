@@ -33,7 +33,7 @@ class BotInstance:
         await message.answer_photo(buf.getvalue())
 
     async def get_state(self, message: types.Message):
-        await message.answer(f'{self.get_state_text()}\n<i>Останнє оновлення: {self.get_time_stamp()}<i>')
+        await message.answer(f'{self.get_state_text()}\n<i>Останнє оновлення: {self.get_time_stamp()}</i>')
 
     def get_time_stamp(self):
         return self.blackout.last_time.strftime("%d.%m.%Y %H:%M")

@@ -2,4 +2,4 @@
 HOST = '8.8.8.8'
 TIMEOUT = 10
 TOKEN = ""
-CHAT_IDS = [415715051]
+CHAT_IDS = []
