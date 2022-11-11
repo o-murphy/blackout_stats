@@ -1,34 +1,68 @@
-from aiogram import Bot
-from aiogram import types
+import asyncio
+from aiogram import Bot, executor, types
 from aiogram.dispatcher import Dispatcher
 from .stats import BlackoutState
 from .plot import make_plot
 
 
-async def run_bot(token, blackout: BlackoutState):
-    bot = Bot(token=token, parse_mode='html')
-    dp = Dispatcher(bot)
+class BotInstance:
+    def __init__(self, token: str, blackout: BlackoutState, target_chats: list[int] = None):
+        self.token = token
+        self.blackout = blackout
+        self.target_chats = target_chats
+        self.bot = Bot(token=self.token, parse_mode='html')
+        loop = asyncio.get_event_loop()
+        self.dp = Dispatcher(self.bot, loop=loop)
 
-    await dp.bot.set_my_commands(commands=[types.BotCommand('stats', 'Get statistics'),
-                                           types.BotCommand('now', 'Get state')])
-    dp.register_message_handler(lambda msg, bk=blackout: send_stats(msg, bk), commands=['stats'])
-    dp.register_message_handler(lambda msg, bk=blackout: get_state(msg, bk), commands=['now'])
+    async def run_bot(self):
 
-    try:
-        await dp.skip_updates()
-        await dp.start_polling(dp)
-    finally:
-        await bot.session.close()
+        await self.dp.bot.set_my_commands(commands=[types.BotCommand('stats', 'Get statistics'),
+                                                    types.BotCommand('now', 'Get state')])
+        self.dp.register_message_handler(lambda msg, bk=self.blackout: self.send_stats(msg), commands=['stats'])
+        self.dp.register_message_handler(lambda msg, bk=self.blackout: self.get_state(msg), commands=['now'])
 
+        try:
+            await self.dp.skip_updates()
+            await self.dp.start_polling(self.dp)
+        finally:
+            await self.bot.session.close()
 
-async def send_stats(message: types.Message, blackout: BlackoutState):
-    data = blackout.get_last_days(7)
-    buf = make_plot(data)
-    await message.answer_photo(buf.getvalue())
+    async def send_stats(self, message: types.Message):
+        data = self.blackout.get_last_days(7)
+        buf = make_plot(data)
+        await message.answer_photo(buf.getvalue())
 
+    async def get_state(self, message: types.Message):
+        await message.answer(f'{self.get_state_text()}\nОстаннє оновлення: {self.get_time_stamp()}')
 
-async def get_state(message: types.Message, blackout: BlackoutState):
-    await message.answer(f'{blackout.last_time}, {blackout.previous}')
+    def get_time_stamp(self):
+        return self.blackout.last_time.strftime("%d.%m.%Y %H:%M")
+
+    def get_state_text(self):
+        if self.blackout.previous:
+            return "<b>💡 Електропостачання у нормі</b>"
+        else:
+            return "<b>🕯️ Електропостачання відсутнє</b>"
+
+    @staticmethod
+    def get_notify_text(result):
+        if result:
+            return "<b>⚠Увага!⚠</b>\n💡 Електропостачання відновлено!"
+        else:
+            return "<b>⚠Увага!⚠</b>\nМожлива відсутність електропостачання!\nДістаємо: 🔦🕯️"
+
+    def send_notify(self, host, result, output):
+        if self.target_chats and self.blackout.previous != result:
+            for uid in self.target_chats:
+                try:
+                    self.dp.loop.create_task(
+                        self.bot.send_message(
+                            uid,
+                            f'{self.get_notify_text(result)}\n<i>Останнє оновлення: {self.get_time_stamp()}</i>',
+                            disable_notification=True
+                        ))
+                except Exception as error:
+                    print(error)
 
 
 if __name__ == '__main__':

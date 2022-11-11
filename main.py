@@ -1,15 +1,18 @@
 import asyncio
-import tomllib
+import sys
+
+if sys.version_info.minor < 11:
+    import tomli as tomllib
+else:
+    import tomllib
 from modules.ping import infinite_ping
 from modules.stats import BlackoutState
-from modules import bot
-
+from modules.bot import BotInstance
 
 HOST = 'google.com'
 TIMEOUT = 2
 TOKEN = ""
 CHAT_ID = 0
-
 
 try:
     with open('config.toml', 'rb') as fp:
@@ -17,16 +20,20 @@ try:
         HOST = config['main']['HOST']
         TIMEOUT = config['main']['TIMEOUT']
         TOKEN = config['main']['TOKEN']
-        CHAT_ID = config['main']['CHAT_ID']
+        CHAT_IDS = config['main']['CHAT_IDS']
 finally:
     pass
 
 
 async def main():
     blackout = BlackoutState(HOST)
-    a, b = await asyncio.gather(*[
-        infinite_ping(HOST, TIMEOUT, callback=blackout.save_state),
-        bot.run_bot(TOKEN, blackout)
+    bot = BotInstance(TOKEN, blackout, CHAT_IDS)
+    await asyncio.gather(*[
+        infinite_ping(HOST, TIMEOUT, callbacks=[
+            bot.send_notify,
+            blackout.save_state,
+        ]),
+        bot.run_bot()
     ])
 
 

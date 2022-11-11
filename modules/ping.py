@@ -1,4 +1,4 @@
-import platform    # For getting the operating system name
+import platform  # For getting the operating system name
 import subprocess  # For executing a shell command
 import asyncio
 
@@ -19,7 +19,7 @@ def ping(host: str):
     return proccess.returncode == 0, proccess.stdout.read().decode('utf-8')
 
 
-async def infinite_ping(host: str, timeout: int, callback: callable):
+async def infinite_ping(host: str, timeout: int, callbacks: list[callable] = None):
     while True:
         is_host, output = ping(host)
         is_global, output = ping('google.com')
@@ -29,10 +29,14 @@ async def infinite_ping(host: str, timeout: int, callback: callable):
             result = True
         else:
             result = False
-        if callback:
-            callback(host, result, output)
+        if callbacks:
+            for callback in callbacks:
+                try:
+                    callback(host, result, output)
+                except Exception:
+                    continue
         await asyncio.sleep(timeout)
 
 
 if __name__ == '__main__':
-    asyncio.run(infinite_ping('94.45.54.166', 2, print))
+    asyncio.run(infinite_ping('94.45.54.166', 2))
