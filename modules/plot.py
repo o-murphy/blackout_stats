@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import io
+from datetime import datetime, timedelta
 
-test_data = [['IP', '2022-11-11', '00:18:01', '11:18:04', 'True'],
+test_data = [
+        ['IP', '2022-11-11', '00:18:01', '11:18:04', 'True'],
         ['IP', '2022-11-11', '11:18:04', '13:18:12', 'False'],
         ['IP', '2022-11-11', '13:18:12', '20:18:12', 'True'],
         ['IP', '2022-11-11', '20:18:12', '23:18:12', 'False'],
@@ -40,7 +42,17 @@ test_data = [['IP', '2022-11-11', '00:18:01', '11:18:04', 'True'],
         ]
 
 
+def next_days_rows(n):
+    # todo: prognoses of future blackouts
+    rows = []
+    for n in range(1, n + 1):
+        rows.append(['None', f'{datetime.now().date() + timedelta(days=n)}', '00:00:00', '00:00:00', ''])
+    return rows
+
+
 def make_plot(data):
+    data += next_days_rows(3)
+    data = data[::-1]
     df = pd.DataFrame(data, columns=['Ip', 'Date', 'Start', 'End', 'Status'])
     start_time = []
     end_time = []
@@ -57,39 +69,44 @@ def make_plot(data):
     df['Start'] = start_time
     df['End'] = end_time
     df['Diff'] = df['End'] - df['Start']
-    color = {"False": "crimson", "True": "turquoise", "None": "white"}
-    fig, ax = plt.subplots(figsize=(6, 3))
+    color = {"False": "crimson", "True": "turquoise", "None": "white", "": "white"}
+    fig, ax = plt.subplots(dpi=200)
+
     w = []
 
-    tasks = enumerate(df.groupby("Date"))
+    tasks = enumerate(df.groupby("Date", sort=False))
 
     for i, task in tasks:
         w.append(task[0])
 
-        for r in task[1].groupby("Status"):
+        for r in task[1].groupby("Status", sort=False):
             data = r[1][["Start", "Diff"]]
-            width = 0.4 if r[0] == 'False' else 0.1
-            ax.broken_barh(data.values, (-i - width / 2, width),
+            width = 0.3 if r[0] != 'True' else 0.1
+            ax.broken_barh(data.values, (i - width / 2, width),
                            color=color[r[0]], label=r[1]['Status'])
 
-    y_ticks = [t[0] for t in df.groupby("Date")]
-    y_ticks.reverse()
-    y_ticks.insert(0, '0')
-    ax.set_yticklabels(y_ticks)
+    y_ticks = [t[0] for t in df.groupby("Date", sort=False)]
+    print(y_ticks)
+    # y_ticks.reverse()
+    # y_ticks.insert(0, '0')
+    # ax.set_yticklabels(y_ticks)
 
     ax.set_xlabel("Час")
     ax.set_ylabel("Дата")
 
-    plt.xticks(list(range(24)), [f'{h}:00' for h in range(24)])
+    plt.yticks(list(range(len(y_ticks))), y_ticks)
 
-    fig.set_figwidth(14)
-    fig.set_figheight(len(y_ticks) / 2)
+    plt.xticks(list(range(24)), [f'{h}:00' for h in range(24)])
+    plt.xticks(rotation=90)
+
+    fig.set_figwidth(10)
+    fig.set_figheight(len(y_ticks))
     plt.xlim(0, 24)
     plt.tight_layout()
     plt.grid()
-    # plt.show()
     buf = io.BytesIO()
-    plt.savefig(buf, dpi=600, format='png')
+
+    plt.savefig(buf, dpi=200, format='png')
     return buf
 
 
