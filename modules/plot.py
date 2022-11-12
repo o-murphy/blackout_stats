@@ -86,7 +86,8 @@ def make_plot(data, schedule=None):
     df['Start'] = start_time
     df['End'] = end_time
     df['Diff'] = df['End'] - df['Start']
-    color = {"False": "crimson", "True": "turquoise", "None": "white", "": "white", "SCHEDULE": "orange"}
+    colors = {"False": "crimson", "True": "blue", "None": "white", "": "white", "SCHEDULE": "orange"}
+    widths = {"False": 0.2, "True": 0.1, "None": 0.1, "": 0.05, "SCHEDULE": 0.4}
     fig, ax = plt.subplots(dpi=200)
 
     w = []
@@ -98,9 +99,9 @@ def make_plot(data, schedule=None):
 
         for r in task[1].groupby("Status", sort=False):
             data = r[1][["Start", "Diff"]]
-            width = 0.3 if r[0] not in ['True', 'SCHEDULE'] else 0.1
+            width = widths[r[0]]
             ax.broken_barh(data.values, (i - width / 2, width),
-                           color=color[r[0]], label=r[1]['Status'])
+                           color=colors[r[0]], label=r[1]['Status'])
 
     y_ticks = [t[0] for t in df.groupby("Date", sort=False)]
 
@@ -113,7 +114,7 @@ def make_plot(data, schedule=None):
     plt.xticks(rotation=90)
 
     fig.set_figwidth(10)
-    fig.set_figheight(len(y_ticks))
+    fig.set_figheight(len(y_ticks) / 2)
     plt.xlim(0, 24)
     plt.tight_layout()
     plt.grid()
