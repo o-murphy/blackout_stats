@@ -21,7 +21,7 @@ test_data = [
 
     ['IP', '2022-11-14', '00:18:01', '10:18:04', 'True'],
     ['IP', '2022-11-14', '10:18:04', '12:18:12', 'True'],
-    ['IP', '2022-11-14', '12:18:12', '19:18:12', 'True'],
+    ['IP', '2022-11-14', '12:18:12', '19:18:12', 'None'],
     ['IP', '2022-11-14', '19:18:12', '23:18:12', 'False'],
 
     ['IP', '2022-11-15', '00:18:01', '11:18:04', 'True'],
@@ -69,6 +69,7 @@ def next_days_rows(n, schedule=None):
 
 
 def make_plot(data, schedule=None):
+    data = test_data
     data += next_days_rows(3, schedule)
     data = data[::-1]
     df = pd.DataFrame(data, columns=['Ip', 'Date', 'Start', 'End', 'Status'])
@@ -86,9 +87,16 @@ def make_plot(data, schedule=None):
     df['Start'] = start_time
     df['End'] = end_time
     df['Diff'] = df['End'] - df['Start']
-    colors = {"False": "crimson", "True": "blue", "None": "white", "": "white", "SCHEDULE": "orange"}
-    widths = {"False": 0.2, "True": 0.1, "None": 0.1, "": 0.05, "SCHEDULE": 0.4}
+
+    colors = {"False": "xkcd:black",
+              "True": "xkcd:bright blue",
+              "None": "xkcd:dark red", "": "xkcd:dark red",
+              "SCHEDULE": "xkcd:gold"}
+    widths = {"False": 0.2, "True": 0.1, "None": 0.01, "": 0.01, "SCHEDULE": 0.4}
+
     fig, ax = plt.subplots(dpi=200)
+    ax.set_facecolor('xkcd:dark grey blue')
+    plt.grid(c='xkcd:navy', linestyle='-', linewidth=0.2)
 
     w = []
 
@@ -113,11 +121,10 @@ def make_plot(data, schedule=None):
     plt.xticks(list(range(24)), [f'{h}:00' for h in range(24)])
     plt.xticks(rotation=90)
 
-    fig.set_figwidth(10)
-    fig.set_figheight(len(y_ticks) / 2)
+    fig.set_figwidth(6)
+    fig.set_figheight(len(y_ticks) / 2.5)
     plt.xlim(0, 24)
     plt.tight_layout()
-    plt.grid()
     buf = io.BytesIO()
 
     plt.savefig(buf, dpi=200, format='png')
