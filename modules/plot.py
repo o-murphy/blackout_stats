@@ -69,7 +69,6 @@ def next_days_rows(n, schedule=None):
 
 
 def make_plot(data, schedule=None):
-    data = test_data
     data += next_days_rows(3, schedule)
     data = data[::-1]
     df = pd.DataFrame(data, columns=['Ip', 'Date', 'Start', 'End', 'Status'])
