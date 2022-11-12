@@ -46,22 +46,22 @@ class BotInstance:
         return self.blackout.last_time.strftime("%d.%m.%Y %H:%M")
 
     def get_state_text(self):
-        if self.blackout.previous is not None:
-            if self.blackout.previous:
-                return "<b>💡 Електропостачання у нормі</b>"
-            else:
-                return "<b>🕯️ Електропостачання відсутнє</b>"
+        if self.blackout.previous is None:
+            return "<b>⚠ Немаэ з'єднання, спробуйте пізніше</b>"
+        elif self.blackout.previous:
+            return "<b>💡 Електропостачання у нормі</b>"
+        else:
+            return "<b>🕯️ Електропостачання відсутнє</b>"
 
     @staticmethod
     def get_notify_text(result):
-        if result is not None:
-            if result:
-                return "<b>⚠Увага!⚠</b>\n💡 Електропостачання відновлено!"
-            else:
-                return "<b>⚠Увага!⚠</b>\nМожлива відсутність електропостачання!\nДістаємо: 🔦🕯️"
+        if result:
+            return "<b>⚠Увага!⚠</b>\n💡 Електропостачання відновлено!"
+        else:
+            return "<b>⚠Увага!⚠</b>\nМожлива відсутність електропостачання!\nДістаємо: 🔦🕯️"
 
     def send_notify(self, host, result, output):
-        if self.target_chats and self.blackout.previous != result:
+        if self.target_chats and self.blackout.previous != result and result is not None:
             for uid in self.target_chats:
                 try:
                     self.dp.loop.create_task(
