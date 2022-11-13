@@ -25,7 +25,6 @@ class BlackoutState:
 
     def save_state(self, host, result, output):
         with open('stats.csv', 'a', newline='') as csvfile:
-            print(self.last_time, type(self.last_time))
             now = datetime.now()
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow([

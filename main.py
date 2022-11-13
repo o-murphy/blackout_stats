@@ -8,6 +8,10 @@ else:
 from modules.ping import infinite_ping
 from modules.stats import BlackoutState
 from modules.bot import BotInstance
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)-30s %(levelname)-8s %(message)s")
+
 
 HOST = 'google.com'
 TIMEOUT = 2
