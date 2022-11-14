@@ -29,8 +29,9 @@ class BotInstance:
             await self.bot.session.close()
 
     async def send_stats(self, message: types.Message):
-        data = self.blackout.get_last_days(4)
-        buf = make_plot(data, self.blackout.schedule)
+        await message.answer('Очікуйте будь ласка, розраховуємо статистику')
+        data = self.blackout.get_data()
+        buf = make_plot(data, 4, self.blackout.schedule)
         legend = [
             "<b>Статистика</b>",
             "",

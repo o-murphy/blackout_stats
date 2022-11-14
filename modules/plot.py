@@ -1,7 +1,8 @@
-import matplotlib.pyplot as plt
-import pandas as pd
 import io
 from datetime import datetime, timedelta
+
+import matplotlib.pyplot as plt
+import pandas as pd
 
 test_data = [
     ['IP', '2022-11-11', '00:18:01', '11:18:04', 'True'],
@@ -52,10 +53,10 @@ WEEKDAYS = [
 ]
 
 
-def next_days_rows(n, schedule=None):
+def next_days_rows(pre, post, schedule=None):
     # todo: prognoses of future blackouts
     rows = []
-    for n in range(0, n + 1):
+    for n in range(-pre + 1, post + 1):
         next_day = datetime.now().date() + timedelta(days=n)
         next_week_day = WEEKDAYS[next_day.weekday()]
         if not schedule:
@@ -68,13 +69,20 @@ def next_days_rows(n, schedule=None):
     return rows
 
 
-def make_plot(data, schedule=None):
-    data += next_days_rows(3, schedule)
+def make_plot(data, days=4, schedule=None, show=False):
+    data += next_days_rows(days, 3, schedule)
     data = data[::-1]
     df = pd.DataFrame(data, columns=['Ip', 'Date', 'Start', 'End', 'Status'])
     start_time = []
     end_time = []
+
+    today_date = datetime.now()
+    pre_date = today_date - timedelta(days=4)
+    df['DT'] = pd.to_datetime(df['Date'])
+    df = df[df['DT'] >= pre_date]
+
     for i, row in df.iterrows():
+
         a = row['Start'].split('.')[0].split(':')
         b = row['End'].split('.')[0].split(':')
         start_hrs = int(a[0]) + (int(a[1]) / 60) + (int(a[2]) / 3600)
@@ -83,9 +91,16 @@ def make_plot(data, schedule=None):
         start_time.append(start_hrs)
         end_time.append(end_hrs)
 
+    # df['Start'] = pd.to_datetime(df['Start'])
+    # df['End'] = pd.to_datetime(df['End'])
+
+    # df['Start'] = df['Start'].hour + df['Start'].minute / 60
+    # df['End'] = df['End'].hour + df['End'].minute / 60
+
     df['Start'] = start_time
     df['End'] = end_time
     df['Diff'] = df['End'] - df['Start']
+    df = df[df.Diff >= 0]
 
     colors = {"False": "xkcd:black",
               "True": "xkcd:bright blue",
@@ -125,10 +140,17 @@ def make_plot(data, schedule=None):
     plt.xlim(0, 24)
     plt.tight_layout()
     buf = io.BytesIO()
-
+    if show:
+        plt.show()
     plt.savefig(buf, dpi=200, format='png')
     return buf
 
 
 if __name__ == '__main__':
-    make_plot(test_data)
+    from modules.stats import BlackoutState
+    import timeit
+
+    b = BlackoutState()
+    print(timeit.timeit(b.get_data, number=1))
+    data = b.get_data()
+    print(timeit.timeit(lambda: make_plot(data, show=True), number=1))
