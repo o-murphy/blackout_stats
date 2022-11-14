@@ -38,13 +38,13 @@ finally:
 
 async def main():
     blackout = BlackoutState(HOST, SCHEDULE)
-    bot = BotInstance(TOKEN, blackout, CHAT_IDS)
+    # bot = BotInstance(TOKEN, blackout, CHAT_IDS)
     await asyncio.gather(*[
         infinite_ping(HOST, TIMEOUT, callbacks=[
-            bot.send_notify,
+            # bot.send_notify,
             blackout.save_state,
         ]),
-        bot.run_bot()
+        # bot.run_bot()
     ])
 
 
