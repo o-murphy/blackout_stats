@@ -46,7 +46,7 @@ class BotInstance:
         await message.answer(f'{self.get_state_text()}\n<i>Останнє оновлення: {self.get_time_stamp()}</i>')
 
     def get_time_stamp(self):
-        return self.blackout.prev_time.strftime("%d.%m.%Y %H:%M")
+        return self.blackout.last_time.strftime("%d.%m.%Y %H:%M")
 
     def get_state_text(self):
         if self.blackout.previous is None:

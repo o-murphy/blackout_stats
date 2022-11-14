@@ -26,10 +26,8 @@ class BlackoutState:
     def __init__(self, host='None', schedule: list = None):
         self.host = host
         self.schedule = schedule
-        self.current = None
-        self.cur_time = datetime.now()
         self.previous = ""
-        self.prev_time = datetime.now()
+        self.last_time = datetime.now()
         self.load_state()
 
     def load_state(self):
@@ -40,7 +38,7 @@ class BlackoutState:
                 print(rows[-1])
                 self.host, date, start, end, state = rows[-1]
                 self.previous = state == 'True'
-                self.prev_time = datetime.strptime(f'{date} {end}', "%Y-%m-%d %H:%M:%S.%f")
+                self.last_time = datetime.strptime(f'{date} {end}', "%Y-%m-%d %H:%M:%S.%f")
         except IOError as error:
             self.save_state(self.host, False, datetime.now())
         except IndexError as error:
@@ -48,39 +46,38 @@ class BlackoutState:
 
     def save_state(self, host, result, output):
         now = datetime.now()
-        self.current = result
-        self.cur_time = now
-        if self.previous != result or self.prev_time.time() > now.time():
+        if self.previous != result or self.last_time.time() > now.time():
             with open('stats.csv', 'a', newline='') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',')
                 writer.writerow([
                     host,
-                    self.prev_time.date(),
-                    self.prev_time.time(),
+                    self.last_time.date(),
+                    self.last_time.time(),
                     now.time(),
                     result
                 ])
                 self.previous = result
-                self.prev_time = now
+                self.last_time = now
             log.info(Statisctics.Saved)
         else:
             log.info(Statisctics.Skipped)
 
     def get_data(self):
         try:
+            now = datetime.now()
             with open('stats.csv', 'r', newline='') as csvfile:
                 reader = csv.reader(csvfile, delimiter=',')
                 data = [row for row in reader]
                 last_row = data[-1]
                 now_row = [
                     last_row[0],
-                    self.cur_time.date().strftime('%Y-%m-%d'),
-                    self.cur_time.time().strftime("%H:%M:%S.%f"),
-                    self.cur_time.time().strftime("%H:%M:%S.%f"),
-                    self.current
+                    now.date().strftime('%Y-%m-%d'),
+                    self.last_time.time().strftime("%H:%M:%S.%f"),
+                    now.time().strftime("%H:%M:%S.%f"),
+                    last_row[4]
                 ]
-                print(now_row)
                 data.append(now_row)
+                data = list(data)
                 return data
 
         except IOError as error:
