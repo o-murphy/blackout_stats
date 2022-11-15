@@ -46,7 +46,7 @@ class BlackoutState:
 
     def save_state(self, host, result, output):
         now = datetime.now()
-        if self.previous != result or self.last_time.time() > now.time():
+        if self.previous != result and self.last_time.time() >= now.time():
             with open('stats.csv', 'a', newline='') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',')
                 writer.writerow([
@@ -56,6 +56,25 @@ class BlackoutState:
                     now.time(),
                     result
                 ])
+                self.previous = result
+                self.last_time = now
+            log.info(Statisctics.Saved)
+        elif self.last_time.time() < now.time():
+            with open('stats.csv', 'a', newline='') as csvfile:
+                writer = csv.writer(csvfile, delimiter=',')
+                writer.writerows([[
+                    host,
+                    self.last_time.date(),
+                    self.last_time.time(),
+                    '23:59:59.0',
+                    result
+                ], [
+                    host,
+                    now.date(),
+                    '00:00:00.0',
+                    now.time(),
+                    result
+                ]])
                 self.previous = result
                 self.last_time = now
             log.info(Statisctics.Saved)
