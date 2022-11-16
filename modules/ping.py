@@ -20,12 +20,38 @@ class PingResponse(Enum):
     NODATA = None
 
 
-def ping(host: str):
-    """
-    Returns True if host (str) responds to a ping request.
-    Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
-    """
+def ping_by_port(host: str, port: str):
+    # Option for the number of packets as a function of
+    # param = '-n' if platform.system().lower() == 'windows' else '-c'
 
+    result_key = None
+
+    if platform.system().lower() == 'windows':
+        # command = ['powershell.exe', 'Test-NetConnection', host, '-p', port]
+        # result_key = 'TcpTestSucceeded'
+        command = ['powershell.exe', 'New-Object', 'System.Net.Sockets.TCPClient', '-ArgumentList', f'{host},{port}']
+        result_key = 'Connected'
+    else:
+        command = ['time', 'timeout', '2', 'nc', '-vz', host, port]
+
+    # Building the command. Ex: "ping -c 1 google.com"
+
+    proccess = subprocess.Popen(command, stdout=subprocess.PIPE)
+    proccess.wait()
+    result = proccess.stdout.read().decode('utf-8')
+
+    if platform.system().lower() == 'windows':
+        result_dict = {}
+        for line in result.split('\r\n'):
+            if ':' in line:
+                k, v, *other = line.split(':')
+                result_dict[k.strip()] = v.strip()
+        return result_dict[result_key] == 'True', result
+    else:
+        return proccess.returncode == 0, result
+
+
+def ping_by_host(host: str):
     # Option for the number of packets as a function of
     param = '-n' if platform.system().lower() == 'windows' else '-c'
 
@@ -34,6 +60,19 @@ def ping(host: str):
     proccess = subprocess.Popen(command, stdout=subprocess.PIPE)
     proccess.wait()
     return proccess.returncode == 0, proccess.stdout.read().decode('utf-8')
+
+
+def ping(host: str):
+
+    """
+    Returns True if host (str) responds to a ping request.
+    Remember that a host may not respond to a ping (ICMP) request even if the host name is valid.
+    """
+    try:
+        host, port = host.split(':')
+        return ping_by_port(host, port)
+    except ValueError:
+        return ping_by_host(host)
 
 
 async def infinite_ping(host: str, timeout: int, callbacks: list[callable] = None):

@@ -1,5 +1,5 @@
 [main]
-HOST = '8.8.8.8'
+HOST = 'google.com:80'
 TIMEOUT = 10
 TOKEN = ""
 CHAT_IDS = [0]

@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)-30s %(leveln
 HOST = 'google.com'
 TIMEOUT = 2
 TOKEN = ""
-CHAT_ID = 0
+CHAT_IDS = []
 
 GROUP = 1
 SCHEDULE = None
@@ -38,13 +38,13 @@ finally:
 
 async def main():
     blackout = BlackoutState(HOST, SCHEDULE)
-    bot = BotInstance(TOKEN, blackout, CHAT_IDS)
+    # bot = BotInstance(TOKEN, blackout, CHAT_IDS)
     await asyncio.gather(*[
         infinite_ping(HOST, TIMEOUT, callbacks=[
-            bot.send_notify,
+            # bot.send_notify,
             blackout.save_state,
         ]),
-        bot.run_bot()
+        # bot.run_bot()
     ])
 
 
