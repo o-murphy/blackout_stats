@@ -26,8 +26,8 @@ class BlackoutState:
     def __init__(self, host='None', schedule: list = None):
         self.host = host
         self.schedule = schedule
-        self.previous = ""
-        self.current = ""
+        self.previous = None
+        self.current = None
         self.last_time = datetime.now()
         self.load_state()
 
@@ -95,7 +95,7 @@ class BlackoutState:
                     now.date().strftime('%Y-%m-%d'),
                     self.last_time.time().strftime("%H:%M:%S.%f"),
                     now.time().strftime("%H:%M:%S.%f"),
-                    self.current
+                    str(self.current)
                 ]
                 data.append(now_row)
                 data = list(data)
