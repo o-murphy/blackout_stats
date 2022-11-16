@@ -38,15 +38,16 @@ def ping_by_port(host: str, port: str):
 
     proccess = subprocess.Popen(command, stdout=subprocess.PIPE)
     proccess.wait()
+    log.info(proccess.returncode)
     result = proccess.stdout.read().decode('utf-8')
-
     if platform.system().lower() == 'windows':
         result_dict = {}
         for line in result.split('\r\n'):
             if ':' in line:
                 k, v, *other = line.split(':')
                 result_dict[k.strip()] = v.strip()
-        return result_dict[result_key] == 'True', result
+        return_code = result_dict.get(result_key, False)
+        return return_code, result if return_code else None
     else:
         return proccess.returncode == 0, result
 
