@@ -27,6 +27,7 @@ class BlackoutState:
         self.host = host
         self.schedule = schedule
         self.previous = ""
+        self.current = ""
         self.last_time = datetime.now()
         self.load_state()
 
@@ -46,6 +47,7 @@ class BlackoutState:
 
     def save_state(self, host, result, output):
         now = datetime.now()
+        self.current = result
         if self.previous != result and self.last_time.time() <= now.time():
             with open('stats.csv', 'a', newline='') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',')
@@ -54,7 +56,7 @@ class BlackoutState:
                     self.last_time.date(),
                     self.last_time.time(),
                     now.time(),
-                    result
+                    self.previous
                 ])
                 self.previous = result
                 self.last_time = now
@@ -67,13 +69,13 @@ class BlackoutState:
                     self.last_time.date(),
                     self.last_time.time(),
                     '23:59:59.0',
-                    result
+                    self.previous
                 ], [
                     host,
                     now.date(),
                     '00:00:00.0',
                     now.time(),
-                    result
+                    self.previous
                 ]])
                 self.previous = result
                 self.last_time = now
@@ -93,7 +95,7 @@ class BlackoutState:
                     now.date().strftime('%Y-%m-%d'),
                     self.last_time.time().strftime("%H:%M:%S.%f"),
                     now.time().strftime("%H:%M:%S.%f"),
-                    last_row[4]
+                    self.current
                 ]
                 data.append(now_row)
                 data = list(data)
