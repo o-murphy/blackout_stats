@@ -45,7 +45,7 @@ class BlackoutState:
         except IndexError as error:
             self.save_state(self.host, False, datetime.now())
 
-    def save_state(self, host, result, output):
+    async def save_state(self, host, result, output):
         now = datetime.now()
         self.current = result
         if self.previous != result and self.last_time.time() <= now.time():

@@ -99,11 +99,10 @@ async def infinite_ping(host: str, timeout: int, callbacks: list[callable] = Non
             await asyncio.sleep(int(timeout/2))
 
         if callbacks:
+            tasks = []
             for callback in callbacks:
-                try:
-                    callback(host, result.value, output)
-                except Exception:
-                    continue
+                tasks.append(callback(host, result.value, output))
+            await asyncio.gather(*tasks)
         await asyncio.sleep(timeout)
 
 
