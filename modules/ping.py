@@ -3,6 +3,7 @@ import subprocess  # For executing a shell command
 import asyncio
 import logging
 from enum import Enum
+from typing import Callable, Awaitable
 
 
 log = logging.getLogger('ping')
@@ -76,7 +77,7 @@ def ping(host: str):
         return ping_by_host(host)
 
 
-async def infinite_ping(host: str, timeout: int, callbacks: list[callable] = None):
+async def infinite_ping(host: str, timeout: int, callbacks: list[Callable[[str, bool, str], Awaitable[str]]] = None):
     while True:
         loop_state = PingLoopState.BreakLoop
         while True:

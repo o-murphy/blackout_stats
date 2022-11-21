@@ -64,19 +64,6 @@ class BotInstance:
         else:
             return "<b>⚠Увага!⚠</b>\nМожливі проблеми з електропостачанням!\nДістаємо: 🔦🕯️"
 
-    # def send_notify(self, host, result, output):
-    #     if self.target_chats and self.blackout.previous != result and result is not None:
-    #         for uid in self.target_chats:
-    #             try:
-    #                 self.dp.loop.create_task(
-    #                     self.bot.send_message(
-    #                         uid,
-    #                         f'{self.get_notify_text(result)}\n<i>Останнє оновлення: {self.get_time_stamp()}</i>',
-    #                         disable_notification=True
-    #                     ))
-    #             except Exception as error:
-    #                 print(error)
-
     async def send_notify(self, host, result, output):
         if self.target_chats and self.blackout.previous != result and result is not None:
             for uid in self.target_chats:
@@ -85,7 +72,6 @@ class BotInstance:
                     f'{self.get_notify_text(result)}\n<i>Останнє оновлення: {self.get_time_stamp()}</i>',
                     disable_notification=True
                 )
-
 
 
 if __name__ == '__main__':
